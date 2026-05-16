@@ -1,1 +1,55 @@
-.
+pipeline {
+  parameters {
+    choice(name: 'terraformAction', choices: ['apply','destroy'], description: 'Terraform Action')
+  }
+
+  environment {
+    ARM_CLIENT_ID       = credentials('ARM_CLIENT_ID')
+    ARM_CLIENT_SECRET   = credentials('ARM_CLIENT_SECRET')
+    ARM_SUBSCRIPTION_ID = credentials('ARM_SUBSCRIPTION_ID')
+    ARM_TENANT_ID       = credentials('ARM_TENANT_ID')
+  }
+
+  agent any
+
+  stages {
+
+    stage('Checkout') {
+      steps {
+        dir("terraform") {
+          git url: 'https://github.com/YourRepo/DevSecOps-Azure.git', branch: 'terraform'
+        }
+      }
+    }
+
+    stage('Plan') {
+      steps {
+        sh 'cd AKS && terraform init'
+        sh 'cd AKS && terraform plan -out tfplan'
+        sh 'cd AKS && terraform show -no-color tfplan > tfplan.txt'
+      }
+    }
+
+    stage('Approval') {
+      steps {
+        script {
+          def plan = readFile 'AKS/tfplan.txt'
+          input message: "Approve Terraform Plan?",
+          parameters: [text(name: 'Plan', defaultValue: plan)]
+        }
+      }
+    }
+
+    stage('Apply/Destroy') {
+      steps {
+        script {
+          if (params.terraformAction == 'apply') {
+            sh 'cd AKS && terraform apply -auto-approve tfplan'
+          } else {
+            sh 'cd AKS && terraform destroy -auto-approve'
+          }
+        }
+      }
+    }
+  }
+}
