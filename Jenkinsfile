@@ -80,7 +80,7 @@ pipeline {
                 sh '''
                     echo "Updating kubeconfig..."
                     aws eks update-kubeconfig \
-                        --region ap-northeast-1 \
+                        --region centralindia \
                         --name quantam-cluster
                 '''
             }
@@ -89,10 +89,10 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 withKubeConfig(
-                    clusterName: 'quantam-cluster',
+                    clusterName: 'quantam-aks',
                     credentialsId: 'kube',
                     namespace: 'quantam',
-                    serverUrl: 'https://339EBFA756C1467BF3271A0E36722D0E.gr7.ap-northeast-1.eks.amazonaws.com',
+                    serverUrl: 'https://quantamaks-c4eef10z.hcp.centralindia.azmk8s.io',
                     restrictKubeConfigAccess: false
                 ) {
                     sh '''
