@@ -7,7 +7,7 @@ pipeline {
     }
 
     environment {
-        IMAGE_NAME = "Krunal-Dharme/DevSecOps-AI-Powered:${GIT_COMMIT}"
+        IMAGE_NAME = "kunu12345/DevSecOps-AI-Powered:${GIT_COMMIT}"
     }
 
     stages {
