@@ -7,15 +7,17 @@ pipeline {
     }
 
     environment {
-        IMAGE_NAME = "kunu12345/DevSecOps-AI-Powered:${GIT_COMMIT}"
+        IMAGE_NAME         = "kunu12345/DevSecOps-AI-Powered:${GIT_COMMIT}"
+        AKS_CLUSTER_NAME   = "quantam-aks"
+        AKS_RESOURCE_GROUP = "quantam-rg"
     }
 
     stages {
 
         stage('Git Checkout') {
             steps {
-                git url: 'https://github.com/Krunal-Dharme/DevSecOps-AI-Powered.git',
-                    branch: 'main'
+                git branch: 'main',
+                    url: 'https://github.com/Krunal-Dharme/DevSecOps-AI-Powered.git'
             }
         }
 
@@ -32,7 +34,7 @@ pipeline {
             steps {
                 sh '''
                     echo "Building the application..."
-                    mvn package
+                    mvn clean package
                 '''
             }
         }
@@ -41,7 +43,6 @@ pipeline {
             steps {
                 sh '''
                     echo "Building Docker image..."
-                    printenv
                     docker build -t ${IMAGE_NAME} .
                 '''
             }
@@ -49,19 +50,17 @@ pipeline {
 
         stage('Docker Login') {
             steps {
-                script {
-                    withCredentials([
-                        usernamePassword(
-                            credentialsId: 'dockerhub-creds',
-                            usernameVariable: 'DOCKER_USERNAME',
-                            passwordVariable: 'DOCKER_PASSWORD'
-                        )
-                    ]) {
-                        sh '''
-                            echo "Logging into Docker Hub..."
-                            echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-                        '''
-                    }
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub-creds',
+                        usernameVariable: 'DOCKER_USERNAME',
+                        passwordVariable: 'DOCKER_PASSWORD'
+                    )
+                ]) {
+                    sh '''
+                        echo "Logging into Docker Hub..."
+                        echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+                    '''
                 }
             }
         }
@@ -75,13 +74,37 @@ pipeline {
             }
         }
 
+        stage('Azure Login') {
+            steps {
+                withCredentials([
+                    string(credentialsId: 'ARM_CLIENT_ID', variable: 'ARM_CLIENT_ID'),
+                    string(credentialsId: 'ARM_CLIENT_SECRET', variable: 'ARM_CLIENT_SECRET'),
+                    string(credentialsId: 'ARM_TENANT_ID', variable: 'ARM_TENANT_ID'),
+                    string(credentialsId: 'ARM_SUBSCRIPTION_ID', variable: 'ARM_SUBSCRIPTION_ID')
+                ]) {
+                    sh '''
+                        echo "Logging into Azure..."
+
+                        az login --service-principal \
+                          --username $ARM_CLIENT_ID \
+                          --password $ARM_CLIENT_SECRET \
+                          --tenant $ARM_TENANT_ID
+
+                        az account set --subscription $ARM_SUBSCRIPTION_ID
+                    '''
+                }
+            }
+        }
+
         stage('Update Kubeconfig') {
             steps {
                 sh '''
-                    echo "Updating kubeconfig..."
-                    aws eks update-kubeconfig \
-                        --region centralindia \
-                        --name quantam-cluster
+                    echo "Updating AKS kubeconfig..."
+
+                    az aks get-credentials \
+                      --resource-group ${AKS_RESOURCE_GROUP} \
+                      --name ${AKS_CLUSTER_NAME} \
+                      --overwrite-existing
                 '''
             }
         }
@@ -97,6 +120,7 @@ pipeline {
                 ) {
                     sh '''
                         echo "Deploying to Kubernetes..."
+
                         kubectl apply -f deployment.yaml -n quantam
                     '''
                 }
