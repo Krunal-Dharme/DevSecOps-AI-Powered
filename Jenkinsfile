@@ -7,7 +7,7 @@ pipeline {
     }
 
     environment {
-        IMAGE_NAME         = "kunu12345/DevSecOps-AI-Powered:${GIT_COMMIT}"
+        IMAGE_NAME         = "IMAGE_NAME = "kunu12345/devsecops-ai-powered:${GIT_COMMIT}"
         AKS_CLUSTER_NAME   = "quantam-aks"
         AKS_RESOURCE_GROUP = "quantam-rg"
     }
