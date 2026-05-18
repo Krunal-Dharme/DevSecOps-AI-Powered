@@ -7,14 +7,14 @@ pipeline {
     }
 
     environment {
-        IMAGE_NAME = "manojkrishnappa/devops-pipeline:${GIT_COMMIT}"
+        IMAGE_NAME = "Krunal-Dharme/DevSecOps-AI-Powered:${GIT_COMMIT}"
     }
 
     stages {
 
         stage('Git Checkout') {
             steps {
-                git url: 'https://github.com/QuntamVector/DevSecOps-AI-Powered.git',
+                git url: 'https://github.com/Krunal-Dharme/DevSecOps-AI-Powered.git',
                     branch: 'main'
             }
         }
