@@ -1,6 +1,6 @@
 resource "azurerm_resource_group" "rg" {
   name     = "quantam-rg"
-  location = "East US"
+  location = "Central India (Zone 1)"
 }
 
 resource "azurerm_virtual_network" "vnet" {
