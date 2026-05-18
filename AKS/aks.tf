@@ -5,15 +5,14 @@ resource "azurerm_kubernetes_cluster" "aks" {
   dns_prefix          = "quantamaks"
 
   default_node_pool {
-    name                = "systempool"
-    node_count         = 2
-    vm_size            = "Standard_D2s_v3"
+    name                 = "systempool"
+    node_count           = 2
+    vm_size              = "Standard_D2s_v3"
+    vnet_subnet_id       = azurerm_subnet.subnet.id
 
-    vnet_subnet_id     = azurerm_subnet.subnet.id
-
-    enable_auto_scaling = true
-    min_count          = 2
-    max_count          = 3
+    enable_auto_scaling  = true
+    min_count            = 2
+    max_count            = 3
   }
 
   identity {
@@ -22,5 +21,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
 
   network_profile {
     network_plugin = "azure"
+    service_cidr   = "10.2.0.0/16"
+    dns_service_ip = "10.2.0.10"
   }
 }
