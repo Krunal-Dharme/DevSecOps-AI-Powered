@@ -4,6 +4,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
   resource_group_name = azurerm_resource_group.rg.name
   dns_prefix          = "quantamaks"
   role_based_access_control_enabled = true
+  oidc_issuer_enabled = true
 
   default_node_pool {
     name                 = "systempool"
