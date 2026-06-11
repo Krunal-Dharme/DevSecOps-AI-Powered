@@ -1,6 +1,6 @@
 resource "azurerm_resource_group" "rg" {
   name     = "quantam-rg"
-  location = "centralindia"
+  location = "eastus2"
 }
 
 resource "azurerm_virtual_network" "vnet" {
