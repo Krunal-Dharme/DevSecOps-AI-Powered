@@ -14,6 +14,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
     enable_auto_scaling  = true
     min_count            = 1
     max_count            = 2
+    only_critical_addons_enabled = true
   }
 
   identity {
